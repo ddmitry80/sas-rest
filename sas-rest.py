@@ -39,7 +39,10 @@ def check_path_restrictions(user, path:Path):
     """Проверяем права доступа пользователя к запрошенному файлу. Возвращаем True, если разрешено."""
     user = user.lower()
     full_path = path.resolve()
-    path_list = folder_restrictions[user]
+    try:
+        path_list = folder_restrictions[user]
+    except KeyError:
+        path_list = ''
     print('Given full path', full_path)
     print(f'Allowed paths for user {user}: {path_list}')
     for path_item in path_list:
@@ -53,7 +56,7 @@ def check_path_restrictions(user, path:Path):
 def check_ldap(user, password):
     """"Проверяем наличие пользователя в LDAP. Если есть - возвращаем имя пользователя, иначе None"""
     if ldap_no_validation:
-        print('LDAP no_validation mode enabled!')
+        print(f"LDAP no_validation mode enabled, user='{user}'")
         return True
     user = user.lower()
     ldap_server = "ldap://dc.mycompany.localdomain"
@@ -95,7 +98,7 @@ def get_sas_table_iter(table_path, enc='iso-8859-5', chunksize=100000):
     return df_iter
 
 
-@app.route('/api/v1.0/tables', method=['GET'])
+@app.route('/api/v1.0/tables', methods=['GET'])
 @auth.login_required
 def tables_get():
     chunksize=100000  # Размер одного чанка
@@ -105,7 +108,7 @@ def tables_get():
     table_path = request.args.get('file')
     # Вид вывода (json/csv)
     out_type = request.args.get('format')
-    if out_type.lower() != 'json':
+    if out_type != 'json':
         out_type = 'csv'
     print('out_type =', out_type)
     # Чтение данных с диска
@@ -115,13 +118,13 @@ def tables_get():
         abort(403)
     # Проверяю путь на существование
     print('Started reading table at:', datetime.datetime.now())
-    if out_type.lower()=='json':
+    if out_type=='json':
         df = get_sas_table(table_path)
         print(df.info(verbose=False, memory_usage='deep'))
         print('Finishing reading table at:', datetime.datetime.now())
         result = df.to_json(orient='records', force_ascii=False)
         return Response(result, mimetype='application/json')
-    if out_type.lower()=='csv':
+    if out_type=='csv':
         iter_count = 0
         start_time = datetime.datetime.now()
         iter_time = start_time
