@@ -15,7 +15,7 @@ from wcmatch import glob
 from flask_httpauth import HTTPBasicAuth
 
 app = Flask(__name__)
-auth = HTTPBasicAuth
+auth = HTTPBasicAuth()
 
 # Кому можно пользоваться сервисом
 # Внимание,используем только строчные буквы в именах пользователей!
@@ -142,7 +142,7 @@ def tables_get():
         return Response(generate(), mimetype='test/csv')
 
 
-if __name__=='__main__':
-    app.run(threaded=True, debug=True)
+# if __name__=='__main__':
+#     app.run(threaded=True, debug=True)
 
         
