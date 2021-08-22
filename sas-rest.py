@@ -32,6 +32,8 @@ folder_restrictions = {
     'ddmitry@mycompany.localdomain' : ['/sas/**/*.sas7bdat', '/**/db/**/*.sas7bdat'],
 }
 
+# Если установлено в True, реальных обращений к серверу каталога не происходит
+ldap_no_validation = True
 
 def check_path_restrictions(user, path:Path):
     """Проверяем права доступа пользователя к запрошенному файлу. Возвращаем True, если разрешено."""
@@ -50,6 +52,9 @@ def check_path_restrictions(user, path:Path):
 
 def check_ldap(user, password):
     """"Проверяем наличие пользователя в LDAP. Если есть - возвращаем имя пользователя, иначе None"""
+    if ldap_no_validation:
+        print('LDAP no_validation mode enabled!')
+        return True
     user = user.lower()
     ldap_server = "ldap://dc.mycompany.localdomain"
     ldap.set_option(ldap.OPT_REFERRALS, 0)
@@ -101,7 +106,7 @@ def tables_get():
     # Вид вывода (json/csv)
     out_type = request.args.get('format')
     if out_type.lower() != 'json':
-        out_type = csv
+        out_type = 'csv'
     print('out_type =', out_type)
     # Чтение данных с диска
     table_path = Path(table_path)
@@ -110,7 +115,7 @@ def tables_get():
         abort(403)
     # Проверяю путь на существование
     print('Started reading table at:', datetime.datetime.now())
-    if out_type.lower()='json':
+    if out_type.lower()=='json':
         df = get_sas_table(table_path)
         print(df.info(verbose=False, memory_usage='deep'))
         print('Finishing reading table at:', datetime.datetime.now())
@@ -132,7 +137,7 @@ def tables_get():
                 if iter_count==1:
                     header = True
                 result = df.to_csv(index=False, header=header)
-                yeld result
+                yield result
             print(f'Table procedded during: {current_time-start_time}')
         return Response(generate(), mimetype='test/csv')
 
