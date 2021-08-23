@@ -29,7 +29,7 @@ white_list = [
 # *	Matches everything except slashes. On Windows it will avoid matching backslashes as well as slashes.
 # **	Matches zero or more directories, but will never match the directories . and ... Requires the GLOBSTAR flag.
 folder_restrictions = {
-    'ddmitry@mycompany.localdomain' : ['/sas/**/*.sas7bdat', '/**/db/**/*.sas7bdat'],
+    'ddmitry@mycompany.localdomain' : ['/sas/**/*.sas7bdat', '/**/db/**/*.sas7bdat', 'c:/**/*.sas7bdat'],
 }
 
 # Если установлено в True, реальных обращений к серверу каталога не происходит
